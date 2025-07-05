@@ -1,10 +1,5 @@
 # NEWSPlus
 
-أكيد! إليك مثال ملف `README.md` احترافي وجاهز لمشروعك **NEWS PLUS - Powered by AI** على GitHub:
-
----
-
-```markdown
 # 📰 NEWS PLUS - Powered by AI 🤖
 
 **NEWS PLUS** is an AI-enhanced, multi-language news presentation platform that organizes the latest global news into smart, categorized sections. The app fetches, displays, and enriches news articles using Gemini AI — offering summaries, ELI5 explanations, and related headlines in an elegant, dark-themed UI.
@@ -35,9 +30,13 @@
 
 ## 🏗️ Project Structure
 
-```
+
 
 news-plus/
+-Comming son
+
+
+
 ├── index.html
 ├── assets/
 │   ├── css/
@@ -51,7 +50,7 @@ news-plus/
 │   └── main.py
 └── README.md
 
-````
+
 
 ---
 
@@ -119,7 +118,7 @@ Generate 3 creative headlines based on: "Tech stocks surge in Q2 2025."
 ## 🧠 Credits
 
 * 👤 Developed by [Your Name](https://github.com/your-username)
-* 🤖 AI Services by Gemini
+* 🤖 AI Services 
 * 🎨 UI inspired by modern dashboard and news layouts
 
 ---
@@ -134,7 +133,4 @@ MIT License — feel free to use, modify, and share!
 
 ```
 
----
 
-هل تحب أجهز لك نسخة منه بملف `.md` جاهز للتحميل؟ أو تريد إضافة لغة عربية في النسخة؟
-```
