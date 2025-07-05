@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📄 Process Articles</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #111827;
+      color: #f9fafb;
+      padding: 2rem;
+    }
+    button {
+      background: #1f2937;
+      color: #f9fafb;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    pre {
+      background: #1e1e2f;
+      padding: 1rem;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <h1>📰 Process All Articles</h1>
+  <button onclick="processArticles()">▶️ Start Processing</button>
+  <pre id="output">Click the button to start...</pre>
+
+  <script>
+    async function processArticles() {
+      const pre = document.getElementById("output");
+      pre.textContent = "⏳ Processing in progress...\n";
+
+      try {
+        const res = await fetch("/process_articles");
+        if (!res.ok) {
+          pre.textContent += `❌ Error: ${res.statusText}`;
+          return;
+        }
+        const text = await res.text();
+        pre.textContent = text;
+      } catch (err) {
+        pre.textContent = `❌ Exception: ${err}`;
+      }
+    }
+  </script>
+</body>
+</html>

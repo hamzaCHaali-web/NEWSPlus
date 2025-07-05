@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsPulse - AI-Powered News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #111827; /* Dark background */
+            color: #d1d5db; /* Default text color */
+        }
+        html[dir="rtl"] body {
+            font-family: 'Noto Sans Arabic', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Source Sans 3', sans-serif;
+            color: #f9fafb; /* White headings */
+        }
+        .news-container-wrapper {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .featured-card, .list-card {
+            transition: background-color 0.3s ease;
+        }
+        .featured-card:hover, .list-card:hover {
+            background-color: #374151; /* bg-gray-700 */
+        }
+        .filter-btn-active {
+            background-color: #4f46e5 !important; /* bg-indigo-600 */
+            color: #ffffff !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        /* Styles for the modal */
+        #ai-modal {
+            transition: opacity 0.3s ease;
+        }
+        #ai-modal-content {
+            transition: transform 0.3s ease;
+        }
+        .gemini-btn {
+             background-color: rgba(79, 70, 229, 0.2);
+             color: #a5b4fc;
+             border: 1px solid rgba(99, 102, 241, 0.4);
+        }
+         .gemini-btn:hover {
+            background-color: rgba(79, 70, 229, 0.4);
+            color: #c7d2fe;
+        }
+        .pw{
+            font-size: 20px;;
+        }
+        .Lrg{
+            font-size: 32px;;
+        }
+        .spinner {
+  background-image: linear-gradient(rgb(186, 66, 255) 35%,rgb(0, 225, 255));
+  width: 70px;
+  height: 70px;
+  animation: spinning82341 1.7s linear infinite;
+  text-align: center;
+  border-radius: 50px;
+  filter: blur(1px);
+  box-shadow: 0px 0px 6px 0px rgb(186, 66, 255), 0px 1px 6px 0px rgb(0, 225, 255);
+}
+
+.spinner1 {
+  background-color: rgb(36, 36, 36);
+  width: 70px;
+  height: 70px;
+  border-radius: 50px;
+  filter: blur(13px);
+}
+
+.spinnerL {
+  background-image: linear-gradient(rgb(186, 66, 255) 35%,rgb(0, 225, 255));
+  width: 100px;
+  height: 100px;
+  animation: spinning82341l 1.7s linear infinite;
+  text-align: center;
+  border-radius: 50px;
+  filter: blur(1px);
+  box-shadow: 0px 0px 6px 0px rgb(186, 66, 255), 0px 1px 6px 0px rgb(0, 225, 255);
+}
+
+.spinner1L {
+  background-color: rgb(36, 36, 36);
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
+  filter: blur(13px);
+}
+@keyframes spinning82341l {
+  0%{
+    border-radius: 10px;
+  }50%{
+    border-radius: 50px;
+  }
+  100%{
+    border-radius: 50px;
+    transform: rotate(360deg);
+  }
+}
+@keyframes spinning82341 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+.typing-text {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 2s steps(30, end) forwards;
+}
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- AI Modal -->
+    <div id="ai-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div id="ai-modal-content" class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-lg p-6 transform scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="ai-modal-title" class="text-xl font-bold text-white">AI Result</h3>
+                <button id="ai-modal-close" class="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-colors">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="ai-modal-body" class="text-gray-300 min-h-[100px] flex items-center justify-center">
+                <!-- AI content or loader will go here -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Alert Banner -->
+    <div class="bg-indigo-600/20 border-b border-indigo-500/30 text-indigo-300 text-center p-2 text-sm">
+        <p data-translate-key="disclaimer"><strong>Disclaimer:</strong> This is a demonstration website and does not provide real-time news.</p>
+    </div>
+
+    <!-- Header and Navigation -->
+    <header id="header" class="bg-gray-900/80 backdrop-blur-lg sticky top-0 z-40 shadow-md">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-2xl font-bold text-white">News<span class="text-indigo-400">Pulse</span></a>
+                </div>
+                <!-- Desktop Filters & Search -->
+                <div class="hidden lg:flex lg:items-center lg:space-x-4">
+                     <div id="desktop-filters" class="flex flex-wrap space-x-2">
+                        <!-- Desktop filters will be populated here by JS -->
+                     </div>
+                     <div class="relative">
+                         <input id="search-bar" type="text" data-translate-key="searchPlaceholder" placeholder="Search news..." class="w-48 xl:w-64 pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-full text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                             <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                         </div>
+                     </div>
+                </div>
+                 <!-- Language Switcher for Desktop -->
+                <div class="hidden lg:flex items-center">
+                     <div class="relative" id="lang-switcher">
+                        <button id="lang-button" class="flex items-center text-gray-300 hover:text-indigo-400 transition-colors duration-300 p-2 rounded-md border border-gray-700 hover:border-indigo-500">
+                           <span id="current-lang-text" class="font-semibold">EN</span>
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <div id="lang-menu" class="hidden absolute right-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg border border-gray-700">
+                           <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700" data-lang="en">English (EN)</a>
+                           <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700" data-lang="ar">العربية (AR)</a>
+                           <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700" data-lang="fr">Français (FR)</a>
+                        </div>
+                     </div>
+                </div>
+
+                 <!-- Mobile Menu Button -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-btn" class="p-2 rounded-md text-gray-400 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+             <!-- Mobile Menu -->
+            <div id="mobile-menu" class="lg:hidden hidden pb-4">
+                 <div class="relative mb-4 px-2">
+                     <input id="mobile-search-bar" type="text" data-translate-key="searchPlaceholder" placeholder="Search news..." class="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-full text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                     <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none rtl:left-auto rtl:right-0 rtl:pr-5">
+                         <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                     </div>
+                 </div>
+                 <div id="mobile-filters" class="flex flex-wrap gap-2 px-2">
+                    <!-- Mobile filters will be populated here by JS -->
+                 </div>
+                 <div class="mt-4 pt-4 border-t border-gray-700 px-2">
+                    <h4 class="text-gray-400 text-sm mb-2" data-translate-key="language">Language</h4>
+                    <a href="#" class="block py-2 text-gray-300 hover:text-indigo-400" data-lang="en">English</a>
+                    <a href="#" class="block py-2 text-gray-300 hover:text-indigo-400" data-lang="ar">العربية</a>
+                    <a href="#" class="block py-2 text-gray-300 hover:text-indigo-400" data-lang="fr">Français</a>
+                 </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="flex justify-center items-center py-60">
+            <!-- <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500"></div> -->
+             <div style="display: flex; flex-direction: column; align-items: center; gap: 29px;">
+        <div class="spinnerL"><div class="spinner1L"></div></div>
+        <p class="text-xl text-gray-200 text-center typing-text">
+          AI [Searching Articles .]
+        </p>
+      </div>
+          </div>
+
+        <!-- News Grid -->
+        <div id="news-container-wrapper" class="news-container-wrapper opacity-0">
+            <!-- This will be populated by JS -->
+        </div>
+
+        <!-- Empty State Message -->
+        <div id="empty-state" class="hidden text-center py-20">
+            <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
+            <h3 id="empty-state-title" class="mt-2 text-lg font-medium text-white" data-translate-key="emptyTitle">No Articles Found</h3>
+            <p id="empty-state-text" class="mt-1 text-sm text-gray-400" data-translate-key="emptyText">We couldn't find any news matching your search. Try a different keyword or category.</p>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    
+            const mockNewsData = [];
+
+            async function loadNews(R) {
+            try {
+                const res = await fetch('/api/articale');
+                const data = await res.json();
+                mockNewsData.push(...data);
+                R()
+            } catch (err) {
+                console.error('Error fetching articles:', err);
+            }}
+
+            
+            
+        
+            // --- MOCK DATA ---
+            // const mockNewsData = [
+            //     { id: 1, title: 'AI Startup Raises $50M in Series B Funding', description: 'A promising AI company focusing on natural language processing has secured significant funding to expand its research and development.', imageUrl: 'https://placehold.co/800x500/1e293b/ffffff?text=Tech', source: 'Tech Weekly', publishedAt: '2025-06-21', category: 'Technology' },
+            //     { id: 2, title: 'Global Markets React to New Economic Policies', description: 'Stock markets around the world are showing volatile reactions to the latest round of economic policy announcements from central banks.', imageUrl: 'https://placehold.co/800x500/1e293b/ffffff?text=Business', source: 'Finance Times', publishedAt: '2025-06-21', category: 'Business' },
+            //     { id: 3, title: 'Titans Win Championship in a Thrilling Final', description: 'The Titans have clinched the championship title after a nail-biting final match that went into overtime.', imageUrl: 'https://placehold.co/800x500/1e293b/ffffff?text=Sports', source: 'Sports Daily', publishedAt: '2025-06-20', category: 'Sports' },
+            //     { id: 4, title: 'UN Summit Addresses Climate Change Urgently', description: 'Leaders from around the globe convene to discuss immediate actions required to combat the escalating climate crisis.', imageUrl: 'https://placehold.co/800x500/1e293b/ffffff?text=World', source: 'Global News', publishedAt: '2025-06-22', category: 'World' },
+            //     { id: 5, 'title': 'New Community Center Opens Downtown', 'description': 'The new center aims to provide resources and activities for local residents, funded by a city-wide initiative.', 'imageUrl': 'https://placehold.co/800x500/1e293b/ffffff?text=Local', 'source': 'City Herald', 'publishedAt': '2025-06-22', 'category': 'Local' },
+            //     { id: 6, 'title': 'Blockbuster Movie "Galaxy Quest 3" Premieres', 'description': 'The long-awaited sequel to the popular sci-fi saga has finally premiered, receiving mixed reviews from critics.', 'imageUrl': 'https://placehold.co/800x500/1e293b/ffffff?text=Entertainment', 'source': 'Cinema Today', 'publishedAt': '2025-06-21', 'category': 'Entertainment' },
+            //     { id: 7, 'title': 'Breakthrough in Alzheimer\'s Research Announced', 'description': 'Scientists have identified a new protein that could be key to developing more effective treatments for Alzheimer\'s disease.', 'imageUrl': 'https://placehold.co/800x500/1e293b/ffffff?text=Science', 'source': 'Nature Journal', 'publishedAt': '2025-06-20', 'category': 'Science' },
+            //     { id: 8, 'title': 'Study Links Gut Health to Improved Mental Well-being', 'description': 'A new comprehensive study shows a strong correlation between a healthy gut microbiome and reduced symptoms of anxiety and depression.', 'imageUrl': 'https://placehold.co/800x500/1e293b/ffffff?text=Health', 'source': 'HealthLine', 'publishedAt': '2025-06-19', 'category': 'Health' },
+            // ];
+
+            // --- DOM ELEMENTS ---
+            const newsContainerWrapper = document.getElementById('news-container-wrapper');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const emptyState = document.getElementById('empty-state');
+            const searchBar = document.getElementById('search-bar');
+            const mobileSearchBar = document.getElementById('mobile-search-bar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const aiModal = document.getElementById('ai-modal');
+            const aiModalContent = document.getElementById('ai-modal-content');
+            const aiModalTitle = document.getElementById('ai-modal-title');
+            const aiModalBody = document.getElementById('ai-modal-body');
+            const aiModalCloseBtn = document.getElementById('ai-modal-close');
+            const langButton = document.getElementById('lang-button');
+            const langMenu = document.getElementById('lang-menu');
+            const desktopFiltersContainer = document.getElementById('desktop-filters');
+            const mobileFiltersContainer = document.getElementById('mobile-filters');
+            const GAID = document.querySelector(".GAID");
+
+            // --- STATE ---
+            let currentCategory = 'all';
+            let currentSearchTerm = '';
+            let l=console.log
+            // --- AI MODAL LOADER ---
+            const modalLoaderHtml = `<div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-400"></div>`;
+            
+            // --- TRANSLATION DATA ---
+            const translations = {
+                 en: {
+                    disclaimer: "<strong>Disclaimer:</strong> This is a demonstration website and does not provide real-time news.",
+                    language: "Language",
+                    searchPlaceholder: "Search news...",
+                    emptyTitle: "No Articles Found",
+                    emptyText: "We couldn't find any news matching your search. Try a different keyword or category.",
+                    aiSummary: "AI Summary",
+                    aiELI5: "Explain Like I'm 5",
+                    aiRelated: "Related Ideas:",
+                    summarizeBtn: "✨ Summarize",
+                    eli5Btn: "✨ ELI5",
+                    generateHeadlinesBtn: "✨ Generate Related Headlines",
+                    categories: { all: "All", World: "World", Local: "Local", Business: "Business", Technology: "Technology", Entertainment: "Entertainment", Sports: "Sports", Science: "Science", Health: "Health" }
+                },
+                ar: {
+                    disclaimer: "<strong>إخلاء مسؤولية:</strong> هذا موقع تجريبي ولا يقدم أخبارًا في الوقت الفعلي.",
+                    language: "اللغة",
+                    searchPlaceholder: "ابحث في الأخبار...",
+                    emptyTitle: "لم يتم العثور على مقالات",
+                    emptyText: "لم نتمكن من العثور على أي أخبار تطابق بحثك. جرب كلمة رئيسية أو فئة مختلفة.",
+                    aiSummary: "ملخص بالذكاء الاصطناعي",
+                    aiELI5: "اشرح لي كأن عمري 5 سنوات",
+                    aiRelated: "أفكار ذات صلة:",
+                    summarizeBtn: "✨ تلخيص",
+                    eli5Btn: "✨ شرح مبسط",
+                    generateHeadlinesBtn: "✨ إنشاء عناوين ذات صلة",
+                    categories: { all: "الكل", World: "العالم", Local: "محلي", Business: "أعمال", Technology: "تقنية", Entertainment: "ترفيه", Sports: "رياضة", Science: "علوم", Health: "صحة" }
+                },
+                fr: {
+                    disclaimer: "<strong>Avis de non-responsabilité :</strong> Ceci est un site de démonstration et ne fournit pas d'actualités en temps réel.",
+                    language: "Langue",
+                    searchPlaceholder: "Rechercher des actualités...",
+                    emptyTitle: "Aucun article trouvé",
+                    emptyText: "Nous n'avons trouvé aucune actualité correspondant à votre recherche. Essayez un autre mot-clé ou une autre catégorie.",
+                    aiSummary: "Résumé par IA",
+                    aiELI5: "Explique comme si j'avais 5 ans",
+                    aiRelated: "Idées connexes :",
+                    summarizeBtn: "✨ Résumer",
+                    eli5Btn: "✨ ELI5",
+                    generateHeadlinesBtn: "✨ Générer des titres associés",
+                    categories: { all: "Tout", World: "Monde", Local: "Local", Business: "Affaires", Technology: "Technologie", Entertainment: "Divertissement", Sports: "Sports", Science: "Science", Health: "Santé" }
+                }
+            };
+            
+        //     articaleWorld=articles.filter(article => article.category === "world");;
+        //     articaleLocal=articles.filter(article => article.category === "local");;
+        //     articaleBusiness=articles.filter(article => article.category === "business");;
+        //     articaleTechnology=articles.filter(article => article.category === "technology");;
+        //     articaleEntert=articles.filter(article => article.category === "entertainment");;
+        //     articaleSports=articles.filter(article => article.category === "sports");;
+        //     articaleScience=articles.filter(article => article.category === "science");;
+        //     articaleHealth=articles.filter(article => article.category === "health");;
+        // // --- FUNCTIONS ---
+            
+            const populateFilters = (lang) => {
+                const cats = translations[lang].categories;
+                let desktopHtml = '';
+                let mobileHtml = '';
+                Object.keys(cats).forEach(key => {
+                    const activeClass = key === 'all' ? 'filter-btn-active' : '';
+                    desktopHtml += `<button class="filter-btn ${activeClass} px-3 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 transition-colors" data-category="${key}">${cats[key]}</button>`;
+                    mobileHtml += `<button class="filter-btn ${activeClass} flex-grow px-3 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 transition-colors" data-category="${key}">${cats[key]}</button>`;
+                });
+                desktopFiltersContainer.innerHTML = desktopHtml;
+                mobileFiltersContainer.innerHTML = mobileHtml;
+
+                // Re-add event listeners
+                document.querySelectorAll('.filter-btn').forEach(button => button.addEventListener('click', handleFilterClick));
+            };
+
+            const setLanguage = (lang) => {
+                document.documentElement.lang = lang;
+                document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+                populateFilters(lang);
+
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    if (translations[lang] && translations[lang][key]) {
+                        if (key === 'disclaimer') {
+                           el.innerHTML = translations[lang][key];
+                        } else {
+                           el.textContent = translations[lang][key];
+                        }
+                    }
+                });
+
+                // Translate placeholder attributes
+                document.querySelectorAll('[data-translate-key-placeholder]').forEach(el => {
+                     const key = el.getAttribute('data-translate-key-placeholder');
+                     if (translations[lang] && translations[lang][key]) {
+                        el.placeholder = translations[lang][key];
+                     }
+                });
+
+                document.getElementById('current-lang-text').textContent = lang.toUpperCase();
+                langMenu.classList.add('hidden');
+                mobileMenu.classList.add('hidden');
+                updateNewsDisplay(); // Re-render news to get translated button text
+            };
+
+
+            const showModal = (titleKey, content) => {
+                const lang = document.documentElement.lang;
+                aiModalTitle.textContent = translations[lang][titleKey] || titleKey;
+                aiModalBody.innerHTML = content;
+                aiModal.classList.remove('hidden');
+                setTimeout(() => {
+                    aiModal.style.opacity = '1';
+                    aiModalContent.style.transform = 'scale(1)';
+                }, 10);
+            };
+
+            const hideModal = () => {
+                aiModal.style.opacity = '0';
+                aiModalContent.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    aiModal.classList.add('hidden');
+                }, 300);
+            };
+
+            const callGemini = async (prompt, jsonSchema = null) => {
+                const apiKey = "AIzaSyBj6Q40Y0Y6YqQkK9zi-z3iPugZ3viUb18"; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                let payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }]
+                };
+
+                if (jsonSchema) {
+                    payload.generationConfig = {
+                        responseMimeType: "application/json",
+                        responseSchema: jsonSchema
+                    };
+                }
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                        console.error('Unexpected API response structure:', result);
+                        return 'Sorry, I could not get a response.';
+                    }
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    return 'An error occurred while contacting the AI.';
+                }
+            };
+
+
+         //waiting elemnts function 
+         function waitForElement(selector, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    const intervalTime = 100;
+    let timePassed = 0;
+
+    const interval = setInterval(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        clearInterval(interval);
+        resolve(element);
+      } else {
+        timePassed += intervalTime;
+        if (timePassed >= timeout) {
+          clearInterval(interval);
+          reject(new Error(`Element ${selector} not found within ${timeout}ms`));
+        }
+      }
+    }, intervalTime);
+  });
+}
+
+const today = new Date();
+const todayStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+            // Optimized version of renderNews
+const renderNews = async (articles, type) => {
+  const lang = document.documentElement.lang;
+  const categories = ['world', 'local', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
+  const categorizedArticles = Object.fromEntries(
+    categories.map(cat => [cat, articles.filter(article => article.category === cat)])
+  );
+    
+    const categorizedArticlesToday = Object.fromEntries(
+  categories.map(cat => [
+    cat,
+    categorizedArticles[cat].filter(article => article.publishid === todayStr)
+  ])
+);
+ //  l(categorizedArticlesToday)
+  newsContainerWrapper.innerHTML = '';
+  setInterval(() => {
+    if (articles.length === 0) {
+    
+    loadingIndicator.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  
+  emptyState.classList.add('hidden');
+    
+
+
+}, 4000);
+  
+
+  let featuredHtml = '';
+  let othersHtml = '<div class="lg:col-span-1 space-y-4">';
+
+  const renderArticleCard = (article) => `
+    <div class="list-card bg-gray-800/50 p-2 rounded-lg">
+      <a href="${article.urlArtical}" target='_blanck' class="flex items-start">
+        <div class="flex-grow pr-4">
+          <h4 class="font-semibold text-white hover:text-indigo-400 transition-colors">${article.title}</h4>
+          <div class="flex items-center text-xs text-gray-400 mt-1">
+            <span class="font-medium">${article.source ?? ' Unknown'}</span>
+            <span class="mx-2">&bull;</span>
+            <span>${article.time.slice(0, 5)}•${article.publishid}</span>
+          </div>
+        </div>
+        ${article.imageUrl ? `<img src="${article.imageUrl}" alt="${article.title}"class="w-24 h-16 object-cover rounded-md flex-shrink-0"onerror="this.onerror=null;this.src='https://placehold.co/400x300/1e293b/ffffff?text=${article.title}';">` : ''}
+      </a>
+      <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-700/50">
+        <button class="gemini-btn summarize-btn text-xs font-semibold py-1 px-2 rounded-md flex-grow" data-id="${article.id}">${translations[lang].summarizeBtn}</button>
+        <button class="gemini-btn eli5-btn text-xs font-semibold py-1 px-2 rounded-md flex-grow" data-id="${article.id}">${translations[lang].eli5Btn}</button>
+      </div>
+    </div>
+  `;
+    let discReponse
+    let promptDEC
+    const hasAtLeastOneArticle = Object.values(categorizedArticlesToday).some(arr => Array.isArray(arr) && arr.length > 0);
+
+    l(categorizedArticlesToday)
+   // l(allCategoriesHaveArticles)
+  if (type === 'all') {
+        
+    if (!hasAtLeastOneArticle) {
+    // ✅ كل التصنيفات فارغة
+    emptyState.classList.remove('hidden'); // أظهر رسالة "لا توجد مقالات"
+    loadingIndicator.classList.add('hidden');
+    return;
+  }
+
+  // ✅ يوجد على الأقل مقال واحد في أحد التصنيفات، تابع التنفيذ بأمان
+    const mainArticle = categorizedArticlesToday.world?.[0] ||
+                        categorizedArticlesToday.local?.[0] ||
+                        categorizedArticlesToday.business?.[0] ||
+                        categorizedArticlesToday.entertainment?.[0] ||
+                        categorizedArticlesToday.health?.[0] ||
+                        categorizedArticlesToday.science?.[0] ||
+                        categorizedArticlesToday.technology?.[0] ||
+                        categorizedArticlesToday.sports?.[0];
+
+    if (!mainArticle) {
+        console.warn("❗ لا يوجد مقال رئيسي لعرضه");
+        return;
+    }
+    const otherArticles = [
+      categorizedArticlesToday.world[1],
+      categorizedArticlesToday.local[0],
+      categorizedArticlesToday.business[0],
+      categorizedArticlesToday.entertainment[0],
+      categorizedArticlesToday.health[0],
+      categorizedArticlesToday.science[0],
+      categorizedArticlesToday.technology[0],
+      categorizedArticlesToday.technology[1],
+      categorizedArticlesToday.world[0],
+      categorizedArticlesToday.health[1],
+    ].filter(Boolean);
+    //l(mainArticle)
+    promptDEC = `
+      Respond only with the HTML snippet—no introductions, explanations, or extra text.
+      Expand a detailed and somewhat lengthy description text HTML snippet for the following news article title.
+      Use only these HTML tags: <h1>, <p>, <strong>, <em>, <ul>, <li>.
+      Add inline CSS styles with colors that fit a dark background (#111727):
+      - Make the <h1 class='Lrg'> text color #a5b8ff (light periwinkle blue).
+      - Make <strong> text color #ff6f61 (a warm coral red).
+      - Make <em> text italic and color #80c27e (a soft green).
+      - Use standard #e0e0e0 (light gray) color for <p class='Pw'>.
+      Make sure the description is rich in detail, explaining the key points, context, and significance.
+      Title: ${mainArticle.title}.
+    `
+      
+    featuredHtml = `
+      <div class="lg:col-span-2">
+        <div class="featured-card block bg-gray-800/50 p-4 rounded-lg h-full flex flex-col">
+          <a href="${mainArticle.urlArtical}" target='_blanck'><img src="${mainArticle.imageUrl}" alt="${mainArticle.title}" class="w-full h-auto object-cover rounded-md mb-4" onerror="this.onerror=null;this.src='https://placehold.co/800x500/1e293b/ffffff?text=Image+Not+Found';"></a>
+          <h3 class="text-2xl md:text-3xl font-bold text-white mb-2"><a href="#">${mainArticle.title}</a></h3>
+          <p class="text-gray-400 mb-4 GAID"></p>
+          <div class="flex items-center text-sm text-gray-400 mt-auto pt-4">
+            <span class="font-semibold">${mainArticle.source ?? "Unknown"}</span>
+            <span class="mx-2">&bull;</span>
+            <span>${mainArticle.time.slice(0, 5)}•${mainArticle.publishid}</span>
+          </div>
+          <div class="border-t border-gray-700 mt-4 pt-4">
+            <button class="gemini-btn generate-headlines-btn text-sm font-semibold py-2 px-4 rounded-lg w-full" data-id="${mainArticle.id}">${translations[lang].generateHeadlinesBtn}</button>
+            <div id="related-headlines-container-${mainArticle.id}" class="mt-4 text-sm"></div>
+          </div>
+        </div>
+      </div>`;
+
+    
+
+    otherArticles.forEach(article => {
+      othersHtml += renderArticleCard(article);
+    });
+
+  } else {
+    const selectedArticles = categorizedArticles[type.toLowerCase()] || [];
+    const parseDate = (dateStr) => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+    };
+
+    const sorted = selectedArticles.slice().sort((a, b) => parseDate(b.publishid) - parseDate(a.publishid));
+//console.log('sorted'+sorted);
+     //   l(sortedArticles)
+    const mainArticle = sorted[0];
+    if (!mainArticle) {
+        emptyState.classList.remove('hidden');
+        loadingIndicator.classList.add('hidden');
+    return;
+    }
+    const imageUrl = mainArticle?.imageUrl ?? 'https://placehold.co/800x500/1e293b/ffffff?text=No+Image';
+    promptDEC = `
+      Respond only with the HTML snippet—no introductions, explanations, or extra text.
+      Expand a detailed and somewhat lengthy description text HTML snippet for the following news article title.
+      Use only these HTML tags: <h1>, <p>, <strong>, <em>, <ul>, <li>.
+      Add inline CSS styles with colors that fit a dark background (#111727):
+      - Make the <h1 class='Lrg'> text color #a5b8ff (light periwinkle blue).
+      - Make <strong> text color #ff6f61 (a warm coral red).
+      - Make <em> text italic and color #80c27e (a soft green).
+      - Use standard #e0e0e0 (light gray) color for <p class='Pw'>.
+      Make sure the description is rich in detail, explaining the key points, context, and significance.
+      Title: ${mainArticle.title}.
+    `
+      
+    featuredHtml = `
+      <div class="lg:col-span-2">
+        <div class="featured-card block bg-gray-800/50 p-4 rounded-lg h-full flex flex-col">
+          <a href="#"><img src="${imageUrl}" alt="${mainArticle.title}" class="w-full h-auto object-cover rounded-md mb-4" onerror="this.onerror=null;this.src='https://placehold.co/800x500/1e293b/ffffff?text=Image+Not+Found';"></a>
+          <h3 class="text-2xl md:text-3xl font-bold text-white mb-2"><a href="${mainArticle.urlArtical}" target='_blanck' >${mainArticle.title}</a></h3>
+          <p class="text-gray-400 mb-4 GAID"></p>
+          <div class="flex items-center text-sm text-gray-400 mt-auto pt-4">
+            <span class="font-semibold">${mainArticle.source ?? "Unknown"}</span>
+            <span class="mx-2">&bull;</span>
+            <span>${mainArticle.time.slice(0, 5)}•${mainArticle.publishid}</span>
+          </div>
+          <div class="border-t border-gray-700 mt-4 pt-4">
+            <button class="gemini-btn generate-headlines-btn text-sm font-semibold py-2 px-4 rounded-lg w-full" data-id="${mainArticle.id}">${translations[lang].generateHeadlinesBtn}</button>
+            <div id="related-headlines-container-${mainArticle.id}" class="mt-4 text-sm"></div>
+          </div>
+        </div>
+      </div>`;
+
+    selectedArticles.slice(1).forEach(article => {
+      othersHtml += renderArticleCard(article);
+    });
+  }
+  
+  
+  othersHtml += '</div>';
+  loadingIndicator.classList.add('hidden');
+  newsContainerWrapper.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">${featuredHtml}${othersHtml}</div>`;
+  // GAID.innerHTML=''
+  addGeminiEventListeners();
+  async function renderAIResponse() {
+  try {
+    // انتظر حتى يظهر العنصر
+    const GAID = await waitForElement('.GAID', 4000);
+
+    GAID.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 29px;">
+        <div class="spinner"><div class="spinner1"></div></div>
+        <p class="text-base text-gray-200 italic text-center typing-text">
+          AI generating description...
+        </p>
+      </div>`;
+
+    const discReponse = await callGemini(promptDEC);
+    GAID.style.display = "block";
+    GAID.innerHTML = cleanCodeBlocks(discReponse);
+  } catch (err) {
+    console.warn("❌ GAID لم يتم العثور عليه:", err.message);
+  }
+}
+
+renderAIResponse();
+
+};
+
+
+
+
+            const addGeminiEventListeners = () => {
+                document.querySelectorAll('.summarize-btn').forEach(btn => btn.addEventListener('click', handleSummarizeClick));
+                document.querySelectorAll('.eli5-btn').forEach(btn => btn.addEventListener('click', handleEli5Click));
+                document.querySelectorAll('.generate-headlines-btn').forEach(btn => btn.addEventListener('click', handleHeadlinesClick));
+            };
+            
+            const findArticleById = (id) => mockNewsData.find(article => article.id === parseInt(id));
+
+            async function handleSummarizeClick(e) {
+                const article = findArticleById(e.target.dataset.id);
+                if (!article) return;
+                showModal('aiSummary', modalLoaderHtml);
+                const prompt = `Summarize the following news article in one single, concise sentence: "${article.title}. ${article.description}"`;
+                const summary = await callGemini(prompt);
+                aiModalBody.innerHTML = `<p>${summary}</p>`;
+            }
+
+            async function handleEli5Click(e) {
+                const article = findArticleById(e.target.dataset.id);
+                if (!article) return;
+                showModal("aiELI5", modalLoaderHtml);
+                const prompt = `Explain the following news story like I'm 5 years old: "${article.title}. ${article.description}"`;
+                const explanation = await callGemini(prompt);
+                aiModalBody.innerHTML = `<p>${explanation}</p>`;
+            }
+            
+            async function handleHeadlinesClick(e) {
+                const article = findArticleById(e.target.dataset.id);
+                const container = document.getElementById(`related-headlines-container-${article.id}`);
+                if (!article || !container) return;
+                
+                container.innerHTML = `<div class="flex justify-center">${modalLoaderHtml}</div>`;
+                const lang = document.documentElement.lang;
+                const prompt = `Based on the headline "${article.title}", generate exactly 3 other creative, related, but different news headlines.`;
+                const schema = {
+                    type: "OBJECT",
+                    properties: { "headlines": { type: "ARRAY", items: { type: "STRING" } } }
+                };
+
+                const response = await callGemini(prompt, schema);
+                try {
+                    const parsed = JSON.parse(response);
+                    if (parsed.headlines && parsed.headlines.length > 0) {
+                        const headlinesHtml = parsed.headlines.map(h => `<li class="py-1 text-indigo-300/80">${h}</li>`).join('');
+                        container.innerHTML = `<p class="font-semibold text-gray-300 mb-2">${translations[lang].aiRelated}</p><ul class="list-disc list-inside">${headlinesHtml}</ul>`;
+                    } else {
+                        container.textContent = 'Could not generate headlines.';
+                    }
+                } catch (error) {
+                    console.error("Error parsing headlines JSON", error);
+                    container.textContent = 'Error displaying headlines.';
+                }
+            }
+            // remove regrex 
+            function cleanCodeBlocks(text) {
+                return text.replace(/```[a-zA-Z]*\n?/g, '').replace(/```/g, '');
+                }
+            const updateNewsDisplay = () => {
+                let filteredNews = [...mockNewsData];
+                if (currentSearchTerm) {
+                    const lowerCaseTerm = currentSearchTerm.toLowerCase();
+                    filteredNews = filteredNews.filter(article => 
+                        article.title.toLowerCase().includes(lowerCaseTerm) ||
+                        article.description.toLowerCase().includes(lowerCaseTerm)
+                    );
+                }
+                renderNews(filteredNews,currentCategory);
+            };
+            const handleFilterClick = (e) => {
+                currentCategory = e.currentTarget.dataset.category;
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                   btn.classList.toggle('filter-btn-active', btn.dataset.category === currentCategory);
+                });
+                
+                if (!mobileMenu.classList.contains('hidden')){
+                    mobileMenu.classList.add('hidden');
+                }
+                newsContainerWrapper.innerHTML = '';
+                loadingIndicator.classList.remove('hidden');
+                updateNewsDisplay();
+            };
+            
+            const handleSearch = (e) => {
+                currentSearchTerm = e.target.value;
+                updateNewsDisplay();
+            };
+            // --- EVENT LISTENERS ---
+            searchBar.addEventListener('input', handleSearch);
+            mobileSearchBar.addEventListener('input', handleSearch);
+            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            aiModalCloseBtn.addEventListener('click', hideModal);
+            aiModal.addEventListener('click', (e) => {
+                if(e.target === aiModal) hideModal();
+            });
+            langButton.addEventListener('click', () => langMenu.classList.toggle('hidden'));
+            document.addEventListener('click', (e) => {
+                 if (e.target.matches('[data-lang]')) {
+                    e.preventDefault();
+                    setLanguage(e.target.getAttribute('data-lang'));
+                }
+                 if (!langButton.contains(e.target) && !langMenu.contains(e.target)) {
+                    langMenu.classList.add('hidden');
+                }
+            });
+            
+            // --- INITIALIZATION ---
+            setTimeout(() => {
+                loadingIndicator.classList.add('hidden');
+                newsContainerWrapper.classList.remove('opacity-0');
+                setLanguage('en'); // Set default language on load
+                loadNews(updateNewsDisplay)
+               // updateNewsDisplay()
+            }, 2500);
+        });
+    </script>
+</body>
+</html>
