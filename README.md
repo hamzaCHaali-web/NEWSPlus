@@ -117,7 +117,7 @@ Generate 3 creative headlines based on: "Tech stocks surge in Q2 2025."
 
 ## 🧠 Credits
 
-* 👤 Developed by [Your Name](https://github.com/your-username)
+* 👤 Developed by [Hamza Chaali](https://github.com/hamzaCHaali-web)
 * 🤖 AI Services 
 * 🎨 UI inspired by modern dashboard and news layouts
 
@@ -127,10 +127,6 @@ Generate 3 creative headlines based on: "Tech stocks surge in Q2 2025."
 
 MIT License — feel free to use, modify, and share!
 
----
 
-> “Empower your reading with the intelligence of AI.”
-
-```
 
 
